@@ -48,7 +48,6 @@ int main (){
             else{
                 anagrams[subject].push_back(word);
             }
-        
         }
     }
 
