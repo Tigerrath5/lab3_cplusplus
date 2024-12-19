@@ -5,10 +5,12 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <sstream>
+#include <sstream> // For std::ostringstream
 #include <cmath>
 #include <numeric> // For std::adjacent_difference
 #include <iomanip> // For formatting output
+#include <iterator> // For std::istream_iterator and std::ostream_iterator
+#include <functional>  // For std::transform
 
 int main() {
     std::ifstream file("/Users/romeodahlstrom/Documents/lab3/code/points.txt");
@@ -47,11 +49,15 @@ int main() {
             std::cerr << "Error: No points found in the file." << std::endl;
             return 1;
         }
-    // Print the points
-    std::cout << "The points:" << std::endl;
-    for (const auto& point : points) {
-        std::cout << "(" << point.first << ", " << point.second << ")" << std::endl;
-    }
+    
+    // Print the points using std::transform
+   std::cout << "The points:" << std::endl;
+   std::transform(points.begin(), points.end(), std::ostream_iterator<std::string>(std::cout, "\n"),
+                  [](const std::pair<int, int>& point) {
+                      std::ostringstream oss;
+                      oss << "(" << point.first << ", " << point.second << ")";
+                      return oss.str();
+                  });
 
     // Vector to store distances between consecutive points
     std::vector<double> distances(points.size(), 0.0);
@@ -79,30 +85,3 @@ int main() {
 
     return 0;
 }
-
-/*
-Comments explaining the code:
-
-1. `#include` statements:
-   - Include libraries for file handling, input/output, vector operations, string manipulation, and mathematical calculations.
-
-2. `std::vector<std::pair<int, int>> points`:
-   - A vector to store the coordinates of points as pairs of integers.
-
-3. File reading loop:
-   - Reads each line from the file in the format `x,y` and parses it into integers `x` and `y`.
-   - Stores the parsed coordinates as pairs in the `points` vector.
-
-4. Printing the points:
-   - Iterates through the `points` vector and prints each point in `(x, y)` format.
-
-5. `std::adjacent_difference`:
-   - Calculates the straight-line distance between consecutive points using a lambda function.
-   - The lambda computes the distance between two points with the Pythagorean theorem.
-
-6. `std::accumulate`:
-   - Sums up the distances (skipping the first element) to compute the total distance travelled.
-
-7. Output:
-   - Prints the total distance travelled with a precision of two decimal places.
-*/
