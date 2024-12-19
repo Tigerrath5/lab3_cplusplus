@@ -40,7 +40,7 @@ int main() {
     // Step 1: Read loans from std::cin
     std::string payer, receiver;
     int amount;
-    
+
     std::cout << "Enter loans in the format: <Payer> <Receiver> <Amount> (e.g., AE EM 102)." << std::endl;
     std::cout << "To finish, press Ctrl+D (Linux/Mac) or Ctrl+Z (Windows) and Enter." << std::endl;
 
@@ -60,19 +60,37 @@ int main() {
     });
 
     printSummary(sortedData, "Name Balance");
+    
+    // Extract only the 'second' values into a new vector
+    std::vector<int> balancesOnly;
+    std::transform(sortedData.begin(), sortedData.end(), std::back_inserter(balancesOnly),
+                   [](const std::pair<std::string, int>& entry) {
+                       return entry.second;
+                   });
 
-    // Step 3: Calculate mean loan and debt amounts
+    // Step 3: Calculate mean loan and debt amounts using copy_if
     std::vector<int> loans, debts;
-    std::for_each(sortedData.begin(), sortedData.end(), [&](const auto& entry) {
-        if (entry.second > 0) {
-            loans.push_back(entry.second); // Positive values are loans
-        } else if (entry.second < 0) {
-            debts.push_back(std::abs(entry.second)); // Negative values are debts
-        }
+
+    // Copy positive values (loans)
+    std::copy_if(balancesOnly.begin(), balancesOnly.end(), std::back_inserter(loans),
+                 [](const int& entry) {
+                     return entry > 0;
+                 });
+
+    // Copy negative values (debts)
+    std::copy_if(balancesOnly.begin(), balancesOnly.end(), std::back_inserter(debts),
+                 [](const int& entry) {
+                     return entry < 0;
+                 });
+
+    // Convert debts to absolute values
+    std::transform(debts.begin(), debts.end(), debts.begin(), [](int value) {
+        return std::abs(value);
     });
 
-    double meanLoan = loans.empty() ? 0.0 : std::accumulate(loans.begin(), loans.end(), 0.0) / loans.size();
-    double meanDebt = debts.empty() ? 0.0 : std::accumulate(debts.begin(), debts.end(), 0.0) / debts.size();
+    // Calculate mean loan and debt amounts
+    int meanLoan = loans.empty() ? 0.0 : std::accumulate(loans.begin(), loans.end(), 0.0) / loans.size();
+    int meanDebt = debts.empty() ? 0.0 : std::accumulate(debts.begin(), debts.end(), 0.0) / debts.size();
 
     // Print mean values
     std::cout << "Mean loan amount: " << std::fixed << std::setprecision(2) << meanLoan << std::endl;
@@ -81,29 +99,3 @@ int main() {
     return 0;
 }
 
-/*
-Comments explaining the code:
-
-1. `#include` statements:
-   - Include necessary libraries for input/output, data structures, algorithms, and mathematical functions.
-
-2. `std::map<std::string, int> balances`:
-   - A map to store the net balance for each person.
-
-3. Input parsing loop:
-   - Reads lines of input in the format `<Payer name> <Receiver name> <price>`.
-   - Updates the map: increases the payer's balance and decreases the receiver's balance.
-
-4. `std::vector` and sorting:
-   - Copies the map into a vector of pairs for sorting.
-   - Sorts by balance in descending order and by name alphabetically for ties.
-
-5. `std::for_each` for categorizing loans and debts:
-   - Iterates through the sorted data to separate loans (positive balances) and debts (negative balances).
-
-6. Mean calculation:
-   - Uses `std::accumulate` to calculate the sum and divides by the number of elements to get the mean for loans and debts.
-
-7. Output:
-   - Prints the sorted data and the calculated mean loan and debt amounts.
-*/
